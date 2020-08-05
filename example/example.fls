@@ -1,0 +1,13 @@
+# Hello World
+
+import "standard";
+
+global constant Point: Class = async class({x: Number = 0, y: Number = 0})
+begin
+	compose #compose# Coordinate(x,y);
+	debug = "Hello World";
+	teste = false;
+	outro = null;
+end;
+
+await create Point(x = 256.0001, y = 256.9.9);

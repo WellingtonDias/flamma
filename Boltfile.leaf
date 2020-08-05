@@ -1,0 +1,23 @@
+{
+	modules =
+	{
+		git-commit = "https://raw.githubusercontent.com/WellingtonDias/bolt-git-commit/master/index.js",
+		merge = "https://raw.githubusercontent.com/WellingtonDias/bolt-merge/master/index.js"
+	},
+	git-commit = "",
+	merge =
+	{
+		input =
+		[
+			["./source/helper/",["header","filter","filterString","filterArray","throwError"],".lua"],
+			["./source/lexer/",["header","readComment","readWord","readNumber","readString","readPunctuation","readToken","readStream","printStream"],".lua"],
+			"./source/cli.lua"
+		],
+		output = "./output/flamma.lua"
+	},
+	macros =
+	{
+		build = "merge",
+		commit = "git-commit"
+	}
+}
