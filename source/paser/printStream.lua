@@ -6,3 +6,7 @@ paser.printStream = function(NODE,TABULATION)
 	else print(" | VALUE: \"" .. NODE.value .. "\"");
 	end;
 end;
+
+
+
+-- {type = "DECLARATION",scope = scope,mutability = mutability,type = type,identifier = identifier},index;
