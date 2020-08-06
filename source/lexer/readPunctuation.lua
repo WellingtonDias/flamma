@@ -8,6 +8,7 @@ lexer.readPunctuation = function(STREAM,INDEX,LINE,COLUMN)
 	elseif lexeme == " *= " then type = "ASTERISK-EQUAL";
 	elseif lexeme == " /= " then type = "SLASH-EQUAL";
 	elseif lexeme == " %= " then type = "PERCENT-EQUAL";
+	elseif lexeme == " := " then type = "COLON-EQUAL";
 	elseif lexeme == " << " then type = "LESS";
 	elseif lexeme == " <= " then type = "LESS-EQUAL";
 	elseif lexeme == " == " then type = "DOUBLE-EQUAL";
@@ -46,5 +47,5 @@ lexer.readPunctuation = function(STREAM,INDEX,LINE,COLUMN)
 			end;
 		end;
 	end;
-	return {type = type,lexeme = lexeme,line = LINE,column = COLUMN},index + 1,column + 1;
+	return lexer.createToken(type,nil,lexeme,LINE,COLUMN),index + 1,column + 1;
 end;

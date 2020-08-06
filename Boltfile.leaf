@@ -10,7 +10,8 @@
 		input =
 		[
 			["./source/helper/",["header","filter","filterString","filterArray","throwError"],".lua"],
-			["./source/lexer/",["header","readComment","readWord","readNumber","readString","readPunctuation","readToken","readStream","printStream"],".lua"],
+			["./source/lexer/",["header","createToken","readComment","readWord","readNumber","readString","readPunctuation","readToken","readStream","printToken","printStream"],".lua"],
+			["./source/paser/",["header","throwError","readToken","readDeclaration","readStatement","readBlock","readStream","printStream"],".lua"],
 			"./source/cli.lua"
 		],
 		output = "./output/flamma.lua"

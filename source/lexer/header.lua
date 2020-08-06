@@ -10,14 +10,8 @@ lexer.TABLE =
 		"function","clousure","class","async","await","return","create","compose","extends",
 		"try","catch","finally","throw",
 		"begin","end",
+		"null",
 		"not","and","or","xor"
-	},
-	KEYWORD_TYPE =
-	{
-		"Void","Null","Boolean","U8","S8","U16","S16","U32","S32","U64","S64","USIZE","SSIZE","F32","F64","Number","String",
-		"List","Map","Object",
-		"Function","Closure","Class",
-		"Promise","Thread"
 	},
 	WORD = "@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_",
 	WORD_EXTENDED = "@abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_",

@@ -7,11 +7,11 @@ lexer.readString = function(STREAM,INDEX,LINE,COLUMN)
 		character = string.sub(STREAM,index,index);
 		index = index + 1;
 		column = column + 1;
-		if character == "\"" then break end;
+		if character == "\"" then break; end;
 		value = value .. character;
 	end;
 	lexeme = string.sub(STREAM,INDEX,index - 1);
-	if character == "\"" then return {type = "STRING",value = value,lexeme = lexeme,line = LINE,column = COLUMN},index,column;
-	else return {type = "INVALID_STRING",lexeme = lexeme,line = LINE,column = COLUMN},index,column;
+	if character == "\"" then return lexer.createToken("STRING",value,lexeme,LINE,COLUMN),index,column;
+	else return lexer.createToken("INVALID_STRING",nil,lexeme,LINE,COLUMN),index,column;
 	end;
 end;

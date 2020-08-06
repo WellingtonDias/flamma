@@ -9,13 +9,13 @@ lexer.readToken = function(STREAM,INDEX,LINE,COLUMN)
 	elseif character == "\"" then token,index,column = lexer.readString(STREAM,INDEX,LINE,COLUMN);
 	else
 		column = COLUMN;
-		if character == "\t" then token = {type = "HORIZONTAL_TAB",lexeme = "\\t",line = LINE,column = COLUMN};
-		elseif character == "\r" then token = {type = "CARRIAGE_RETURN",lexeme = "\\r",line = LINE,column = COLUMN};
+		if character == "\t" then token = lexer.createToken("HORIZONTAL_TAB",nil,"\\t",LINE,COLUMN);
+		elseif character == "\r" then token = lexer.createToken("CARRIAGE_RETURN",nil,"\\r",LINE,COLUMN);
 		elseif character == "\n" then
-			token = {type = "LINE_FEED",lexeme = "\\n",line = LINE,column = COLUMN};
+			token = lexer.createToken("LINE_FEED",nil,"\\n",LINE,COLUMN);
 			line = LINE + 1;
 			column = 0;
-		else token = {type = "INVALID_TOKEN",lexeme = character,line = LINE,column = COLUMN};
+		else token = lexer.createToken("INVALID_CHARACTER",nil,character,LINE,COLUMN);
 		end;
 		index = INDEX + 1;
 		column = column + 1;
