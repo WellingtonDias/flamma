@@ -1,18 +1,24 @@
 paser.readDeclaration = function(STREAM,INDEX)
-	local identifier,index,mutability,scope,token,type;
+	local identifiers,index,mutability,name,scope,token,type;
 	token,index = paser.readToken(STREAM,INDEX);
 	scope = token.type;
 	token,index = paser.readToken(STREAM,index + 1);
 	if not helper.filterArray({token.type},paser.STREAM_TABLE.MUTABILITY) then paser.throwError("Bad formatted declaration, expected a mutability modifier",token); end;
 	mutability = token.type;
-	token,index = paser.readToken(STREAM,index + 1);
-	if token.type ~= "WORD" then paser.throwError("Bad formatted declaration, expected a identifier name",token); end;
-	identifier = token.value;
-	token,index = paser.readToken(STREAM,index + 1);
-	if token.type == "COLON" then
+	identifiers = {};
+	while true do
 		token,index = paser.readToken(STREAM,index + 1);
-		if token.type ~= "WORD" then paser.throwError("Bad formatted declaration, expected a type name",token); end;
-		type = token.value;
+		if token.type ~= "WORD" then break; end;
+		name = token.value;
+		token,index = paser.readToken(STREAM,index + 1);
+		if token.type == "COLON" then
+			token,index = paser.readToken(STREAM,index + 1);
+			if token.type ~= "WORD" then paser.throwError("Bad formatted declaration, expected a type name",token); end;
+			type = token.value;
+		else type = "Undefined"
+		end;
+		table.insert(identifiers,{type = "IDENTIFIER",name = name,type = type});
 	end;
-	return {type = "DECLARATION",scope = scope,mutability = mutability,type = type,identifier = identifier},index + 1;
+	if #identifiers == 0 then paser.throwError("Bad formatted declaration, expected a identifier name",token); end;
+	return {type = "DECLARATION",scope = scope,mutability = mutability,identifiers = identifiers},index;
 end;

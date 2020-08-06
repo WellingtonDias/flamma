@@ -1,3 +1,5 @@
 # Flamma Code Example
 
-local constant Point: Number;
+local constant Point2D: Number;
+local constant Point3D: Number;
+local constant Point4D, Point5D: Number;

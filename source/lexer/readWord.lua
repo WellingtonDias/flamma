@@ -10,9 +10,9 @@ lexer.readWord = function(STREAM,INDEX,LINE,COLUMN)
 		index = index + 1;
 		column = column + 1;
 	end;
-		if helper.filterArray({lexeme},lexer.TABLE.KEYWORD_GENERAL) then return lexer.createToken(string.upper(lexeme),nil,lexeme,LINE,COLUMN),index,column;
-		elseif (lexeme == "false") then return lexer.createToken("BOOLEAN",false,lexeme,LINE,COLUMN),index,column;
-		elseif (lexeme == "true") then return lexer.createToken("BOOLEAN",true,lexeme,LINE,COLUMN),index,column;
-		else return lexer.createToken("WORD",lexeme,lexeme,LINE,COLUMN),index,column;
+	if helper.filterArray({lexeme},lexer.TABLE.KEYWORD_GENERAL) then return lexer.createToken(string.upper(lexeme),nil,lexeme,LINE,COLUMN),index,column;
+	elseif (lexeme == "false") then return lexer.createToken("BOOLEAN",false,lexeme,LINE,COLUMN),index,column;
+	elseif (lexeme == "true") then return lexer.createToken("BOOLEAN",true,lexeme,LINE,COLUMN),index,column;
+	else return lexer.createToken("WORD",lexeme,lexeme,LINE,COLUMN),index,column;
 	end;
 end;
