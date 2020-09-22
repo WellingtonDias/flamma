@@ -7,4 +7,4 @@ thread variable Point3D: Boolean := false or true;
 local constant Point4D: String,Point5D = "Hello World!!!",-256.45 + 43;
 thread variable Point6D,Point7D: Number := true,++127;
 
-global constant STRUCT: List = message(2,(45 + 24) * 2,"teste" + "!!!",null or true,false);
+global constant STRUCT: List = message-teste(2,(45 + 24) * 2,"teste" + "!!!",null or true,false);
