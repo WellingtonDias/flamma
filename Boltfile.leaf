@@ -1,17 +1,19 @@
 {
 	modules =
 	{
+		clean = "https://raw.githubusercontent.com/WellingtonDias/bolt-clean/master/index.js",
 		git-commit = "https://raw.githubusercontent.com/WellingtonDias/bolt-git-commit/master/index.js",
 		merge = "https://raw.githubusercontent.com/WellingtonDias/bolt-merge/master/index.js"
 	},
+	clean = "./output/flamma.lua",
 	git-commit = "",
 	merge =
 	{
 		input =
 		[
 			["./source/helper/",["header","filter","filterString","filterArray","throwError"],".lua"],
-			["./source/lexer/",["header","createToken","readComment","readWord","readNumber","readString","readPunctuation","readToken","readStream","printToken","printStream"],".lua"],
-			["./source/paser/",["header","throwError","readToken","readDeclaration","readBlock","readStream","printStream"],".lua"],
+			["./source/lexer/",["header","createToken","readComment","readWord","readNumber","readString","readPunctuation","composeStream","createStream","printToken","printStream"],".lua"],
+			["./source/paser/",["header","throwError","createNode","readToken","filterExpression","composeExpression","readArguments","readDeclaration_mutability","readDeclaration_identifiers","readDeclaration_expressions","readDeclaration","composeBlock","createStream","printStream"],".lua"],
 			"./source/cli.lua"
 		],
 		output = "./output/flamma.lua"
@@ -19,6 +21,7 @@
 	macros =
 	{
 		build = "merge",
-		commit = "git-commit"
+		commit = "git-commit",
+		clean = "clean"
 	}
 }

@@ -11,7 +11,7 @@ lexer.readString = function(STREAM,INDEX,LINE,COLUMN)
 		value = value .. character;
 	end;
 	lexeme = string.sub(STREAM,INDEX,index - 1);
-	if character == "\"" then return lexer.createToken("STRING",value,lexeme,LINE,COLUMN),index,column;
-	else return lexer.createToken("INVALID_STRING",nil,lexeme,LINE,COLUMN),index,column;
+	if character == "\"" then return lexer.createToken("STRING",lexeme,LINE,COLUMN,value),index,column;
+	else return lexer.createToken("INVALID_STRING",lexeme,LINE,COLUMN),index,column;
 	end;
 end;

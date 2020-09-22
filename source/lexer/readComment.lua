@@ -11,5 +11,5 @@ lexer.readComment = function(STREAM,INDEX,LINE,COLUMN)
 		if character == "#" then break; end;
 		value = value .. character;
 	end;
-	return lexer.createToken("COMMENT",value,string.sub(STREAM,INDEX,index - 1),LINE,COLUMN),index,column;
+	return lexer.createToken("COMMENT",string.sub(STREAM,INDEX,index - 1),LINE,COLUMN,value),index,column;
 end;

@@ -11,7 +11,7 @@ lexer.readNumber = function(STREAM,INDEX,LINE,COLUMN)
 		column = column + 1;
 	end;
 	value = tonumber(lexeme);
-	if value then return lexer.createToken("NUMBER",value,lexeme,LINE,COLUMN),index,column;
-	else return lexer.createToken("INVALID_NUMBER",nil,lexeme,LINE,COLUMN),index,column;
+	if value then return lexer.createToken("NUMBER",lexeme,LINE,COLUMN,value),index,column;
+	else return lexer.createToken("INVALID_NUMBER",lexeme,LINE,COLUMN),index,column;
 	end;
 end;

@@ -1,5 +1,5 @@
 helper.throwError = function(MESSAGE)
 	print(debug.traceback());
-	print(MESSAGE);
+	print("ERROR " .. MESSAGE .. ".");
 	os.exit();
 end;

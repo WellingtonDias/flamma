@@ -1,24 +1,11 @@
-paser.readDeclaration = function(STREAM,INDEX)
-	local identifiers,index,mutability,name,scope,token,type;
+paser.readDeclaration = function(STREAM,INDEX,STATE,LINE,COLUMN)
+	local assigment,expressions,identifiers,index,mutability,scope,token;
 	token,index = paser.readToken(STREAM,INDEX);
-	scope = token.type;
-	token,index = paser.readToken(STREAM,index + 1);
-	if not helper.filterArray({token.type},paser.STREAM_TABLE.MUTABILITY) then paser.throwError("Bad formatted declaration, expected a mutability modifier",token); end;
-	mutability = token.type;
-	identifiers = {};
-	while true do
-		token,index = paser.readToken(STREAM,index + 1);
-		if token.type ~= "WORD" then break; end;
-		name = token.value;
-		token,index = paser.readToken(STREAM,index + 1);
-		if token.type == "COLON" then
-			token,index = paser.readToken(STREAM,index + 1);
-			if token.type ~= "WORD" then paser.throwError("Bad formatted declaration, expected a type name",token); end;
-			type = token.value;
-		else type = "Undefined"
-		end;
-		table.insert(identifiers,{type = "IDENTIFIER",name = name,type = type});
+	scope = token.class;
+	mutability,index = paser.readDeclaration_mutability(STREAM,index + 1);
+	identifiers,index = paser.readDeclaration_identifiers(STREAM,index);
+	assigment,expressions,index = paser.readDeclaration_expressions(STREAM,index,STATE);
+	if assigment ~= nil then return paser.createNode("INITIALIZATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers,assigment = assigment,expressions = expressions}),index;
+	else return paser.createNode("DECLARATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers}),index;
 	end;
-	if #identifiers == 0 then paser.throwError("Bad formatted declaration, expected a identifier name",token); end;
-	return {type = "DECLARATION",scope = scope,mutability = mutability,identifiers = identifiers},index;
 end;
