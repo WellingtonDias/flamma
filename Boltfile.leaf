@@ -9,13 +9,7 @@
 	git-commit = "",
 	merge =
 	{
-		input =
-		[
-			["./source/helper/",["header","filter","filterString","filterArray","throwError"],".lua"],
-			["./source/lexer/",["header","createToken","readComment","readWord","readNumber","readString","readPunctuation","composeStream","createStream","printToken","printStream"],".lua"],
-			["./source/paser/",["header","throwError","createNode","readToken","filterExpression","composeExpression","readArguments","readDeclaration_mutability","readDeclaration_identifiers","readDeclaration_expressions","readDeclaration","composeBlock","createStream","printStream"],".lua"],
-			"./source/cli.lua"
-		],
+		input = [["./source/",["helper","lexer","paser","interpreter","cli"],".lua"]],
 		output = "./output/flamma.lua"
 	},
 	macros =
