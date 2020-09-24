@@ -31,8 +31,25 @@ helper.throwError = function(MESSAGE)
 	os.exit();
 end;
 
+helper.printPair = function(KEY,VALUE)
+	io.write(KEY .. " = ");
+	if type(VALUE) ~= "table" then
+		if type(VALUE) == nil then io.write("nil");
+		elseif type(VALUE) == "boolean" then
+			if VALUE == false then io.write("false");
+			else io.write("true");
+			end;
+		else io.write(VALUE);
+		end;
+	else io.write(helper.printTable(VALUE));
+	end;
+	io.write(" ");
+end;
+
 helper.printTable = function(TABLE)
-	io.write("{ ");
-	for key in pairs(TABLE) do io.write(key,", "); end;
-	io.write(" }");
+	io.write("{");
+	for key,value in pairs(TABLE) do
+		helper.printPair(key,value);
+	end;
+	io.write("}");
 end;

@@ -165,7 +165,7 @@ paser.formatExpression = function(EXPRESSION)
 					table.insert(expression,table.remove(stack,1));
 				end;
 			end;
-		elseif helper.filterArray({node.class},paser.RPN_TABL.OPERAND]) == true then table.insert(expression,node);
+		elseif helper.filterArray({node.class},paser.RPN_TABLE.OPERAND) == true then table.insert(expression,node);
 		elseif helper.filterArray({node.class},paser.RPN_TABLE.OPERATOR) == true then
 			if (#stack == 0) or (stack[1].class == "PARENTHESIS_OPEN") then table.insert(stack,1,node);
 			elseif (paser.OPERATOR_TABLE[node.class][1] > paser.OPERATOR_TABLE[stack[1].class][1]) or ((paser.OPERATOR_TABLE[node.class][1] == paser.OPERATOR_TABLE[stack[1].class][1]) and (paser.OPERATOR_TABLE[node.class][2] == "RIGHT")) then table.insert(stack,1,node);
@@ -175,6 +175,7 @@ paser.formatExpression = function(EXPRESSION)
 			end;
 		end;
 	end;
+	helper.printTable(stack);
 	while #stack > 0 do
 		node = table.remove(stack,1);
 		if helper.filterArray({node.class},paser.RPN_TABLE.GROUP) == true then paser.throwError("Invalid expression",node); end;
@@ -340,8 +341,8 @@ paser.printStream = function(NODE,TABULATION)
 	else
 		local value;
 		if NODE.class == "BOOLEAN" then
-			if NODE.value == true then value = "true";
-			else value = "false";
+			if NODE.value == false then value = "false";
+			else value = "true";
 			end;
 		elseif NODE.class == "STRING" then value = "\"" .. NODE.value .. "\""
 		else value = NODE.value;
