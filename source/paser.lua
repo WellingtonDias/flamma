@@ -12,8 +12,8 @@ paser.STREAM_TABLE =
 	MUTABILITY = {"CONSTANT","VARIABLE"},
 	ASSIGNMENT =
 	{
-		["INITIALIZATION"] = {"EQUAL","COLON-EQUAL"},
-		["EXPRESSION"] = {"EQUAL","PLUS-EQUAL","MINUS-EQUAL","ASTERISK-EQUAL","SLASH-EQUAL","PERCENT-EQUAL"}
+		INITIALIZATION = {"EQUAL","COLON-EQUAL"},
+		EXPRESSION = {"EQUAL","PLUS-EQUAL","MINUS-EQUAL","ASTERISK-EQUAL","SLASH-EQUAL","PERCENT-EQUAL"}
 	},
 	EXPRESSION =
 	{
@@ -28,7 +28,7 @@ paser.STREAM_TABLE =
 			"LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
 		},
 		["STATEMENT"] = {"EQUAL","PLUS-EQUAL","MINUS-EQUAL","ASTERISK-EQUAL","SLASH-EQUAL","PERCENT-EQUAL"},
-		["COMPOUND"] = {"ENTITY","ARGUMENTS"}
+		COMPOUND = {"ENTITY","ARGUMENTS"}
 	}
 };
 
@@ -70,9 +70,9 @@ paser.FILTER_TABLE =
 
 paser.RPN_TABLE =
 {
-	["GROUP"] = {"PARENTHESIS_OPEN","PARENTHESIS_CLOSE"},
-	["OPERAND"] = {"NULL","BOOLEAN","NUMBER","STRING","ENTITY","ARGUMENTS"},
-	["OPERATOR"] =
+	GROUP = {"PARENTHESIS_OPEN","PARENTHESIS_CLOSE"},
+	OPERAND = {"NULL","BOOLEAN","NUMBER","STRING","ENTITY","ARGUMENTS"},
+	OPERATOR =
 	{
 		"EQUAL","EQUAL-PLUS","EQUAL-MINUS","EQUAL-ASTERISK","EQUAL-SLASH","EQUAL-PERCENT",
 		"NOT","AND","OR","XOR",
@@ -101,7 +101,7 @@ paser.OPERATOR_TABLE =
 	["EQUAL"] = {3,"LEFT"},
 	["NOT-EQUAL"] = {3,"LEFT"},
 	["AND"] = {2,"LEFT"},
-	["OR"] = {1,"LEFT"},
+	["OR"] = {1,"LEFT"}
 };
 
 paser.throwError = function(MESSAGE,TOKEN)
@@ -147,13 +147,13 @@ paser.readArguments = function(STREAM,INDEX,STATE,LINE,COLUMN)
 	return paser.createNode("ARGUMENTS","(",LINE,COLUMN,{value = arguments}),index;
 end;
 
-paser.formatExpression = function(STREAM)
+paser.formatExpression = function(EXPRESSION)
 	local expression,node,stack;
 	expression = {};
 	stack = {};
-	for i = 1, #STREAM do
-		node = STREAM[i];
-		if helper.filterArray({node.class},paser.RPN_TABLE["GROUP"]) == true then
+	for i = 1, #EXPRESSION do
+		node = EXPRESSION[i];
+		if helper.filterArray({node.class},paser.RPN_TABLE.GROUP) == true then
 			if node.class == "PARENTHESIS_OPEN" then table.insert(stack,1,node);
 			elseif node.class == "PARENTHESIS_CLOSE" then
 				while true do
@@ -165,8 +165,8 @@ paser.formatExpression = function(STREAM)
 					table.insert(expression,table.remove(stack,1));
 				end;
 			end;
-		elseif helper.filterArray({node.class},paser.RPN_TABLE["OPERAND"]) == true then table.insert(expression,node);
-		elseif helper.filterArray({node.class},paser.RPN_TABLE["OPERATOR"]) == true then
+		elseif helper.filterArray({node.class},paser.RPN_TABL.OPERAND]) == true then table.insert(expression,node);
+		elseif helper.filterArray({node.class},paser.RPN_TABLE.OPERATOR) == true then
 			if (#stack == 0) or (stack[1].class == "PARENTHESIS_OPEN") then table.insert(stack,1,node);
 			elseif (paser.OPERATOR_TABLE[node.class][1] > paser.OPERATOR_TABLE[stack[1].class][1]) or ((paser.OPERATOR_TABLE[node.class][1] == paser.OPERATOR_TABLE[stack[1].class][1]) and (paser.OPERATOR_TABLE[node.class][2] == "RIGHT")) then table.insert(stack,1,node);
 			else
@@ -177,17 +177,17 @@ paser.formatExpression = function(STREAM)
 	end;
 	while #stack > 0 do
 		node = table.remove(stack,1);
-		if helper.filterArray({node.class},paser.RPN_TABLE["GROUP"]) == true then paser.throwError("Invalid expression",node); end;
+		if helper.filterArray({node.class},paser.RPN_TABLE.GROUP) == true then paser.throwError("Invalid expression",node); end;
 		table.insert(expression,node);
 	end;
 	return expression;
 end;
 
-paser.filterExpression = function(STREAM,TYPE)
+paser.filterExpression = function(EXPRESSION,TYPE)
 	local currentNode,previousNode;
 	previousNode = {class = "START"};
-	for i = 1, #STREAM do
-		currentNode = STREAM[i];
+	for i = 1, #EXPRESSION do
+		currentNode = EXPRESSION[i];
 		if helper.filterArray({previousNode.class},paser.FILTER_TABLE[TYPE][currentNode.class]) == false then paser.throwError("invalid expression",currentNode); end;
 		previousNode = currentNode;
 	end;
@@ -201,7 +201,7 @@ paser.composeExpression = function(STREAM,INDEX,STATE,TYPE)
 		token,index = paser.readToken(STREAM,index);
 		if helper.filterArray({token.class},paser.STREAM_TABLE.EXPRESSION[TYPE]) == false then break;
 		elseif token.class == "PARENTHESIS_OPEN" then
-			if node ~= nil and helper.filterArray({node.class},paser.STREAM_TABLE.EXPRESSION["COMPOUND"]) == true then
+			if node ~= nil and helper.filterArray({node.class},paser.STREAM_TABLE.EXPRESSION.COMPOUND) == true then
 				table.insert(STATE.stack,1,"ARGUMENTS");
 				node,index = paser.readArguments(STREAM,index,STATE,token.line,token.column);
 			else
@@ -230,7 +230,7 @@ end;
 paser.readDeclaration_expressions = function(STREAM,INDEX,STATE)
 	local assigment,expression,expressions,index,token;
 	token,index = paser.readToken(STREAM,INDEX);
-	if helper.filterArray({token.class},paser.STREAM_TABLE.ASSIGNMENT["INITIALIZATION"]) == true then
+	if helper.filterArray({token.class},paser.STREAM_TABLE.ASSIGNMENT.INITIALIZATION) == true then
 		assigment = token.class;
 		expressions = {};
 		index = index + 1;

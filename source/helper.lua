@@ -30,3 +30,9 @@ helper.throwError = function(MESSAGE)
 	print("ERROR: " .. MESSAGE .. ".");
 	os.exit();
 end;
+
+helper.printTable = function(TABLE)
+	io.write("{ ");
+	for key in pairs(TABLE) do io.write(key,", "); end;
+	io.write(" }");
+end;
