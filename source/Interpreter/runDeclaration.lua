@@ -7,8 +7,10 @@ interpreter.runDeclaration = function(DECLARATION,SCOPES)
 		type = identifier.type;
 	elseif DECLARATION.class == "INITIALIZATION" then
 		value = interpreter.runExpression(DECLARATION.expressions[1],SCOPES);
-		if (DECLARATION.assigment == "COLON-EQUAL") and (identifier.type == "Undefined") then type = value.class;
-		else type = identifier.type;
+		if (DECLARATION.assigment == "COLON-EQUAL") and (identifier.type == "Undefined") then
+			type = value.class;
+		else
+			type = identifier.type;
 		end;
 	end;
 	SCOPES[scope][identifier.name] =

@@ -4,17 +4,16 @@ interpreter.TABLE =
 {
 	SCOPE =
 	{
-		["GLOBAL"] = "globalScope";
-		["THREAD"] = "threadScope";
-		["LOCAL"] = "localScope";
-	};
+		["GLOBAL"] = "globalScope",
+		["THREAD"] = "threadScope",
+		["LOCAL"] = "localScope"
+	},
 	EXPRESSION =
 	{
 		OPERAND = {"NULL","BOOLEAN","NUMBER","STRING","ENTITY"},
 		OPERATOR =
 		{
-			"NOT",
-			"AND","OR","XOR",
+			"NOT","AND","OR","XOR",
 			"POSITIVE","NEGATIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT",
 			"DOT",
 			"LESS","LESS-EQUAL","EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
@@ -22,7 +21,7 @@ interpreter.TABLE =
 		UNARY =
 		{
 			"NOT",
-			"POSITIVE","NEGATIVE",
+			"POSITIVE","NEGATIVE"
 		},
 		BINARY =
 		{
@@ -31,5 +30,5 @@ interpreter.TABLE =
 			"DOT",
 			"LESS","LESS-EQUAL","EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
 		}
-	};
+	}
 };

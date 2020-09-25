@@ -10,7 +10,9 @@ paser.readDeclaration_expressions = function(STREAM,INDEX,STATE)
 			expression,index = paser.composeExpression(STREAM,index,STATE,"INLINE");
 			table.insert(expressions,paser.createNode("EXPRESSION",token.lexeme,token.line,token.column,{value = expression}));
 			token,index = paser.readToken(STREAM,index);
-			if token.class ~= "COMMA" then break; end;
+			if token.class ~= "COMMA" then
+				break;
+			end;
 			index = index + 1;
 		end;
 	else

@@ -5,7 +5,9 @@ paser.readDeclaration = function(STREAM,INDEX,STATE,LINE,COLUMN)
 	mutability,index = paser.readDeclaration_mutability(STREAM,index + 1);
 	identifiers,index = paser.readDeclaration_identifiers(STREAM,index);
 	assigment,expressions,index = paser.readDeclaration_expressions(STREAM,index,STATE);
-	if assigment ~= nil then return paser.createNode("INITIALIZATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers,assigment = assigment,expressions = expressions}),index;
-	else return paser.createNode("DECLARATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers}),index;
+	if assigment ~= nil then
+		return paser.createNode("INITIALIZATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers,assigment = assigment,expressions = expressions}),index;
+	else
+		return paser.createNode("DECLARATION",token.lexeme,LINE,COLUMN,{scope = scope,mutability = mutability,identifiers = identifiers}),index;
 	end;
 end;
