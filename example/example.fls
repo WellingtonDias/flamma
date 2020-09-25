@@ -1,5 +1,7 @@
 # Flamma Code Example
 
-local variable Point1D;
-thread variable Point2D: Number;
-global constant Point3D := -256.4;
+global variable boolean := true;
+global variable number := 256.4;
+
+local variable Point1D: Boolean = not boolean;
+thread constant Point1D := 2 * number;
