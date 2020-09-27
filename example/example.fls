@@ -1,7 +1,13 @@
 # Flamma Code Example
 
 global variable boolean := true;
-global variable number := 256.4;
+# global variable number := 256.4;
 
 local variable Point1D: Boolean = not boolean;
-thread constant Point1D := 2 * number;
+# thread constant Point1D := 2 * number;
+
+hero.attack = 4;
+hero.attack += 4;
+
+hero.defense,hero.attack = 4,8;
+# hero.defense,hero.attack += 4;
