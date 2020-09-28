@@ -11,7 +11,7 @@ paser.STREAM_TABLE =
 		CLASS = {"PUBLIC","PRETECTED","PRIVATE"}
 	},
 	MODIFIER = {"CONSTANT","VARIABLE"},
-	INITIALIZATION = {"EQUAL","COLON-EQUAL"},
+	DECLARATION = {"EQUAL","COLON-EQUAL"},
 	ASSIGNMENT = {"EQUAL","PLUS-EQUAL","MINUS-EQUAL","ASTERISK-EQUAL","SLASH-EQUAL","PERCENT-EQUAL"},
 	EXPRESSION =
 	{
@@ -24,8 +24,7 @@ paser.STREAM_TABLE =
 			"DOT",
 			"LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
 		},
-		["REDUCED"] = {"WORD","DOT"},
-		COMPOUND = {"FIELD"}
+		["REDUCED"] = {"WORD","DOT"}
 	}
 };
 table.insert(paser.STREAM_TABLE.SCOPE.CLASS,paser.STREAM_TABLE.SCOPE.ROUTINE);
@@ -78,7 +77,7 @@ paser.RPN_TABLE =
 		"NOT","AND","OR","XOR",
 		"POSITIVE","NEGATIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT",
 		"DOT",
-		"LESS","LESS-EQUAL","EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
+		"LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"
 	},
 	PRECEDENCE =
 	{
@@ -95,7 +94,7 @@ paser.RPN_TABLE =
 		["LESS-EQUAL"] = {4,"LEFT"},
 		["GREATER-EQUAL"] = {4,"LEFT"},
 		["GREATER"] = {4,"LEFT"},
-		["EQUAL"] = {3,"LEFT"},
+		["DOUBLE-EQUAL"] = {3,"LEFT"},
 		["NOT-EQUAL"] = {3,"LEFT"},
 		["AND"] = {2,"LEFT"},
 		["XOR"] = {1,"LEFT"},
@@ -198,7 +197,7 @@ paser.formatExpression = function(EXPRESSION)
 end;
 
 
-paser.composeExpression = function(STREAM,INDEX,STATE,TYPE)
+paser.composeExpression = function(STREAM,INDEX,TYPE)
 	local expression,index,node,token;
 	expression = {};
 	index = INDEX;
@@ -225,13 +224,13 @@ paser.composeExpression = function(STREAM,INDEX,STATE,TYPE)
 end;
 
 
-paser.composeExpressions = function(STREAM,INDEX,STATE,TYPE)
+paser.composeExpressions = function(STREAM,INDEX,TYPE)
 	local expression,expressions,index,token;
 	expressions = {};
 	index = INDEX;
 	while true do
 		token,index = paser.readToken(STREAM,index);
-		expression,index = paser.composeExpression(STREAM,index,STATE,TYPE);
+		expression,index = paser.composeExpression(STREAM,index,TYPE);
 		table.insert(expressions,paser.createNode("EXPRESSION",token.lexeme,token.line,token.column,{value = expression}));
 		token,index = paser.readToken(STREAM,index);
 		if token.class ~= "COMMA" then
@@ -274,7 +273,7 @@ paser.composeIdentifiers = function(STREAM,INDEX)
 end;
 
 
-paser.readDeclaration = function(STREAM,INDEX,STATE)
+paser.readDeclaration = function(STREAM,INDEX)
 	local expressions,first,identifiers,index,modifier,operator,scope,token;
 	first,index = paser.readToken(STREAM,INDEX);
 	scope = first.class;
@@ -285,9 +284,9 @@ paser.readDeclaration = function(STREAM,INDEX,STATE)
 	modifier = token.class;
 	identifiers,index = paser.composeIdentifiers(STREAM,index + 1);
 	token,index = paser.readToken(STREAM,index);
-	if helper.filterArray({token.class},paser.STREAM_TABLE.INITIALIZATION) == true then
+	if helper.filterArray({token.class},paser.STREAM_TABLE.DECLARATION) == true then
 		operator = token.class;
-		expressions,index = paser.composeExpressions(STREAM,index + 1,STATE,"EXTENDED");
+		expressions,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
 		return paser.createNode("INITIALIZATION",first.lexeme,first.line,first.column,{scope = scope,modifier = modifier,identifiers = identifiers,operator = operator,expressions = expressions}),index;
 	else
 		return paser.createNode("DECLARATION",first.lexeme,first.line,first.column,{scope = scope,modifier = modifier,identifiers = identifiers}),index;
@@ -295,10 +294,10 @@ paser.readDeclaration = function(STREAM,INDEX,STATE)
 end;
 
 
-paser.readAssigment = function(STREAM,INDEX,STATE)
-	local expressions,first,fields,index,operator,token;
+paser.readAssigment = function(STREAM,INDEX)
+	local expressions,fields,first,index,operator,token;
 	first,index = paser.readToken(STREAM,INDEX);
-	fields,index = paser.composeExpressions(STREAM,index,STATE,"REDUCED");
+	fields,index = paser.composeExpressions(STREAM,index,"REDUCED");
 	token,index = paser.readToken(STREAM,index);
 	if #fields > 1 then
 		if token.class ~= "EQUAL" then
@@ -310,21 +309,21 @@ paser.readAssigment = function(STREAM,INDEX,STATE)
 		end;
 	end;
 	operator = token.class;
-	expressions,index = paser.composeExpressions(STREAM,index + 1,STATE,"EXTENDED");
+	expressions,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
 	return paser.createNode("ASSIGNMENT",first.lexeme,first.line,first.column,{fields = fields,operator = operator,expressions = expressions}),index;
 end;
 
 
-paser.composeBlock = function(STREAM,INDEX,STATE)
+paser.composeBlock = function(STREAM,INDEX)
 	local block,index,statement,token;
 	block = {};
 	index = INDEX;
 	while true do
 		token,index = paser.readToken(STREAM,index);
-		if (helper.filterArray({token.class},paser.STREAM_TABLE.SCOPE.ROUTINE) == true) or (STATE.type == "CLASS" and helper.filterArray({token.class},paser.STREAM_TABLE.SCOPE.CLASS) == true) then
-			statement,index = paser.readDeclaration(STREAM,index,STATE);
+		if helper.filterArray({token.class},paser.STREAM_TABLE.SCOPE.ROUTINE) == true then
+			statement,index = paser.readDeclaration(STREAM,index);
 		elseif helper.filterArray({token.class},paser.STREAM_TABLE.EXPRESSION["REDUCED"]) == true then
-			statement,index = paser.readAssigment(STREAM,index,STATE);
+			statement,index = paser.readAssigment(STREAM,index);
 		else
 			break;
 		end;
@@ -345,13 +344,14 @@ end;
 paser.createStream = function(STREAM)
 	local block,first,index,token;
 	first,index = paser.readToken(STREAM,1);
-	block,index = paser.composeBlock(STREAM,index,{type = "SCRIPT",control = false,stack = {}});
+	block,index = paser.composeBlock(STREAM,index);
 	token,index = paser.readToken(STREAM,index);
 	if token.class ~= "END" then
 		paser.throwError("invalid token in the script, expected a EOF",token);
 	end;
 	return paser.createNode("SCRIPT",first.lexeme,first.line,first.column,{value = block});
 end;
+
 
 paser.printStream = function(NODE,TABULATION)
 	local value;
@@ -364,7 +364,7 @@ paser.printStream = function(NODE,TABULATION)
 				io.write("\n");
 			end;
 		end;
-		if (NODE.class == "SCRIPT") then
+		if NODE.class == "SCRIPT" then
 			io.write("\n");
 		end;
 	elseif (NODE.class == "DECLARATION") or (NODE.class == "INITIALIZATION") then
@@ -375,12 +375,10 @@ paser.printStream = function(NODE,TABULATION)
 		io.write("\n" .. string.rep("\t",TABULATION + 1) .. "IDENTIFIERS: " .. "\n");
 		for i = 1, #NODE.identifiers do
 			paser.printStream(NODE.identifiers[i],TABULATION + 2);
-			if i < #NODE.identifiers then
-				io.write("\n");
-			end;
+			io.write("\n");
 		end;
 		if NODE.class == "INITIALIZATION" then
-			io.write("\n" .. string.rep("\t",TABULATION + 1) .. "EXPRESSIONS: " .. "\n");
+			io.write(string.rep("\t",TABULATION + 1) .. "EXPRESSIONS: " .. "\n");
 			for i = 1, #NODE.expressions do
 				paser.printStream(NODE.expressions[i],TABULATION + 2);
 				if i < #NODE.expressions then
