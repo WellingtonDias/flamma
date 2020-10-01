@@ -5,12 +5,15 @@ paser.STREAM_TABLE =
 {
 	IGNORED = {"COMMENT","SPACE","HORIZONTAL_TAB","CARRIAGE_RETURN","LINE_FEED"},
 	INVALID = {"INVALID_CHARACTER","INVALID_NUMBER","INVALID_STRING","INVALID_PUNCTUATION"},
-	SCOPE =
-	{
-		ROUTINE = {"GLOBAL","THREAD","LOCAL"},
-		CLASS = {"PUBLIC","PRETECTED","PRIVATE"}
-	},
+	SCOPE = {"GLOBAL","LOCAL"},
 	MODIFIER = {"CONSTANT","VARIABLE"},
+	TYPE =
+	{
+		["NULL"] = "Null",
+		["BOOLEAN"] = "Boolean",
+		["NUMBER"] = "Number",
+		["STRING"] = "String"
+	},
 	DECLARATION = {"EQUAL","COLON-EQUAL"},
 	ASSIGNMENT = {"EQUAL","PLUS-EQUAL","MINUS-EQUAL","ASTERISK-EQUAL","SLASH-EQUAL","PERCENT-EQUAL"},
 	EXPRESSION =
@@ -27,7 +30,6 @@ paser.STREAM_TABLE =
 		["REDUCED"] = {"WORD","DOT"}
 	}
 };
-table.insert(paser.STREAM_TABLE.SCOPE.CLASS,paser.STREAM_TABLE.SCOPE.ROUTINE);
 
 
 paser.FILTER_TABLE =
@@ -35,35 +37,35 @@ paser.FILTER_TABLE =
 	["EXTENDED"] =
 	{
 		["PARENTHESIS_OPEN"] = {"START","PARENTHESIS_OPEN","NOT","AND","OR","XOR","NEGATIVE","POSITIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
-		["PARENTHESIS_CLOSE"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","FIELD"},
+		["PARENTHESIS_CLOSE"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","IDENTIFIER"},
 		["NULL"] = {"START","PARENTHESIS_OPEN","DOUBLE-EQUAL","NOT-EQUAL"},
 		["BOOLEAN"] = {"START","PARENTHESIS_OPEN","NOT","AND","OR","XOR","DOUBLE-EQUAL","NOT-EQUAL"},
 		["NUMBER"] = {"START","PARENTHESIS_OPEN","NEGATIVE","POSITIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
 		["STRING"] = {"START","PARENTHESIS_OPEN","PLUS","DOUBLE-EQUAL","NOT-EQUAL"},
-		["FIELD"] = {"START","PARENTHESIS_OPEN","NOT","AND","OR","XOR","NEGATIVE","POSITIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT","DOT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
+		["IDENTIFIER"] = {"START","PARENTHESIS_OPEN","NOT","AND","OR","XOR","NEGATIVE","POSITIVE","PLUS","MINUS","ASTERISK","SLASH","PERCENT","DOT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
 		["NOT"] = {"START","PARENTHESIS_OPEN","AND","OR","XOR","DOUBLE-EQUAL","NOT-EQUAL"},
-		["AND"] = {"PARENTHESIS_CLOSE","BOOLEAN","FIELD"},
-		["OR"] = {"PARENTHESIS_CLOSE","BOOLEAN","FIELD"},
-		["XOR"] = {"PARENTHESIS_CLOSE","BOOLEAN","FIELD",},
+		["AND"] = {"PARENTHESIS_CLOSE","BOOLEAN","IDENTIFIER"},
+		["OR"] = {"PARENTHESIS_CLOSE","BOOLEAN","IDENTIFIER"},
+		["XOR"] = {"PARENTHESIS_CLOSE","BOOLEAN","IDENTIFIER",},
 		["POSITIVE"] = {"START","PARENTHESIS_OPEN","PLUS","MINUS","ASTERISK","SLASH","PERCENT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
 		["NEGATIVE"] = {"START","PARENTHESIS_OPEN","PLUS","MINUS","ASTERISK","SLASH","PERCENT","LESS","LESS-EQUAL","DOUBLE-EQUAL","NOT-EQUAL","GREATER-EQUAL","GREATER"},
-		["PLUS"] = {"PARENTHESIS_CLOSE","NUMBER","STRING","FIELD"},
-		["MINUS"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD",},
-		["ASTERISK"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["SLASH"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["PERCENT"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["DOT"] = {"FIELD"},
-		["LESS"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["LESS-EQUAL"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["DOUBLE-EQUAL"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","FIELD"},
-		["NOT-EQUAL"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","FIELD"},
-		["GREATER-EQUAL"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"},
-		["GREATER"] = {"PARENTHESIS_CLOSE","NUMBER","FIELD"}
+		["PLUS"] = {"PARENTHESIS_CLOSE","NUMBER","STRING","IDENTIFIER"},
+		["MINUS"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER",},
+		["ASTERISK"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["SLASH"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["PERCENT"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["DOT"] = {"IDENTIFIER"},
+		["LESS"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["LESS-EQUAL"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["DOUBLE-EQUAL"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","IDENTIFIER"},
+		["NOT-EQUAL"] = {"PARENTHESIS_CLOSE","NULL","BOOLEAN","NUMBER","STRING","IDENTIFIER"},
+		["GREATER-EQUAL"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"},
+		["GREATER"] = {"PARENTHESIS_CLOSE","NUMBER","IDENTIFIER"}
 	},
 	["REDUCED"] =
 	{
-		["FIELD"] = {"START","DOT"},
-		["DOT"] = {"FIELD"}
+		["IDENTIFIER"] = {"START","DOT"},
+		["DOT"] = {"IDENTIFIER"}
 	}
 };
 
@@ -71,7 +73,8 @@ paser.FILTER_TABLE =
 paser.RPN_TABLE =
 {
 	GROUP = {"PARENTHESIS_OPEN","PARENTHESIS_CLOSE"},
-	OPERAND = {"NULL","BOOLEAN","NUMBER","STRING","FIELD"},
+	LITERAL = {"NULL","BOOLEAN","NUMBER","STRING"},
+	OPERAND = {"NULL","BOOLEAN","NUMBER","STRING","IDENTIFIER"},
 	OPERATOR =
 	{
 		"NOT","AND","OR","XOR",
@@ -125,98 +128,111 @@ paser.readToken = function(STREAM,INDEX)
 end;
 
 
-paser.createNode = function(CLASS,LEXEME,LINE,COLUMN,TABLE)
-	local node;
-	node = {class = CLASS,lexeme = LEXEME,line = LINE,column = COLUMN};
-	if TABLE ~= nil then
-		for key,value in pairs(TABLE) do
-			node[key] = value;
-		end;
-	end;
-	return node;
-end;
-
-
-paser.filterExpression = function(EXPRESSION,TYPE)
-	local currentNode,previousNode;
-	previousNode = {class = "START"};
-	for i = 1, #EXPRESSION do
-		currentNode = EXPRESSION[i];
-		if helper.filterArray({previousNode.class},paser.FILTER_TABLE[TYPE][currentNode.class]) == false then
-			paser.throwError("invalid token in the expression",currentNode);
-		end;
-		previousNode = currentNode;
+paser.createNode = function(TOKEN)
+	if helper.filterArray({TOKEN.class},paser.RPN_TABLE.LITERAL) == true then
+		return {class = "LITERAL",type = paser.STREAM_TABLE.TYPE[TOKEN.class],value = TOKEN.value};
+	elseif TOKEN.class == "IDENTIFIER" then
+		return {class = TOKEN.class,value = TOKEN.value};
+	elseif helper.filterArray({TOKEN.class},paser.RPN_TABLE.OPERATOR) == true then
+		return {class = "OPERATOR",value = TOKEN.class};
 	end;
 end;
 
 
 paser.formatExpression = function(EXPRESSION)
-	local expression,node,stack;
+	local expression,stack,token;
 	expression = {};
 	stack = {};
 	for i = 1, #EXPRESSION do
-		node = EXPRESSION[i];
-		if helper.filterArray({node.class},paser.RPN_TABLE.GROUP) == true then
-			if node.class == "PARENTHESIS_OPEN" then
-				table.insert(stack,1,node);
-			elseif node.class == "PARENTHESIS_CLOSE" then
+		token = EXPRESSION[i];
+		if helper.filterArray({token.class},paser.RPN_TABLE.GROUP) == true then
+			if token.class == "PARENTHESIS_OPEN" then
+				table.insert(stack,1,token);
+			elseif token.class == "PARENTHESIS_CLOSE" then
 				while true do
 					if #stack == 0 then
-						paser.throwError("invalid token in the expression",node);
+						paser.throwError("invalid token in the expression",token);
 					end;
 					if stack[1].class == "PARENTHESIS_OPEN" then
 						table.remove(stack,1);
 						break;
 					end;
-					table.insert(expression,table.remove(stack,1));
+					table.insert(expression,paser.createNode(table.remove(stack,1)));
 				end;
 			end;
-		elseif helper.filterArray({node.class},paser.RPN_TABLE.OPERAND) == true then
-			table.insert(expression,node);
-		elseif helper.filterArray({node.class},paser.RPN_TABLE.OPERATOR) == true then
-			if (#stack == 0) or (stack[1].class == "PARENTHESIS_OPEN") then
-				table.insert(stack,1,node);
-			elseif (paser.OPERATOR_TABLE[node.class][1] > paser.OPERATOR_TABLE[stack[1].class][1]) or ((paser.OPERATOR_TABLE[node.class][1] == paser.OPERATOR_TABLE[stack[1].class][1]) and (paser.OPERATOR_TABLE[node.class][2] == "RIGHT")) then
-				table.insert(stack,1,node);
+		elseif helper.filterArray({token.class},paser.RPN_TABLE.OPERAND) == true then
+			table.insert(expression,paser.createNode(token));
+		elseif helper.filterArray({token.class},paser.RPN_TABLE.OPERATOR) == true then
+			if
+				(#stack == 0) or
+				(stack[1].class == "PARENTHESIS_OPEN") or
+				(paser.RPN_TABLE.PRECEDENCE[token.class][1] > paser.RPN_TABLE.PRECEDENCE[stack[1].class][1]) or
+				(
+					(paser.RPN_TABLE.PRECEDENCE[token.class][1] == paser.RPN_TABLE.PRECEDENCE[stack[1].class][1]) and
+					(paser.RPN_TABLE.PRECEDENCE[token.class][2] == "RIGHT")
+				)
+			then
+				table.insert(stack,1,token);
 			else
-				while (#stack > 0) and (stack[1].class ~= "PARENTHESIS_OPEN") and ((paser.OPERATOR_TABLE[node.class][1] < paser.OPERATOR_TABLE[stack[1].class][1]) or ((paser.OPERATOR_TABLE[node.class][1] == paser.OPERATOR_TABLE[stack[1].class][1]) and (paser.OPERATOR_TABLE[node.class][2] == "LEFT"))) do
-					table.insert(expression,table.remove(stack,1));
+				while
+					(#stack > 0) and
+					(stack[1].class ~= "PARENTHESIS_OPEN") and
+					(
+						(paser.RPN_TABLE.PRECEDENCE[token.class][1] < paser.RPN_TABLE.PRECEDENCE[stack[1].class][1]) or
+						(
+							(paser.RPN_TABLE.PRECEDENCE[token.class][1] == paser.RPN_TABLE.PRECEDENCE[stack[1].class][1]) and
+							(paser.RPN_TABLE.PRECEDENCE[token.class][2] == "LEFT")
+						)
+					)
+				do
+					table.insert(expression,paser.createNode(table.remove(stack,1)));
 				end;
-				table.insert(stack,1,node);
+				table.insert(stack,1,token);
 			end;
 		end;
 	end;
 	while #stack > 0 do
-		node = table.remove(stack,1);
-		if helper.filterArray({node.class},paser.RPN_TABLE.GROUP) == true then
-			paser.throwError("invalid token in the expression",node);
+		token = table.remove(stack,1);
+		if helper.filterArray({token.class},paser.RPN_TABLE.GROUP) == true then
+			paser.throwError("invalid token in the expression",token);
 		end;
-		table.insert(expression,node);
+		table.insert(expression,paser.createNode(token));
 	end;
 	return expression;
 end;
 
 
+paser.filterExpression = function(EXPRESSION,TYPE)
+	local currentToken,previousToken;
+	previousToken = {class = "START"};
+	for i = 1, #EXPRESSION do
+		currentToken = EXPRESSION[i];
+		if helper.filterArray({previousToken.class},paser.FILTER_TABLE[TYPE][currentToken.class]) == false then
+			paser.throwError("invalid token in the expression",currentToken);
+		end;
+		previousToken = currentToken;
+	end;
+end;
+
+
 paser.composeExpression = function(STREAM,INDEX,TYPE)
-	local expression,index,node,token;
+	local expression,index,newToken,oldToken;
 	expression = {};
 	index = INDEX;
 	while true do
-		token,index = paser.readToken(STREAM,index);
-		if helper.filterArray({token.class},paser.STREAM_TABLE.EXPRESSION[TYPE]) == false then
+		oldToken,index = paser.readToken(STREAM,index);
+		if helper.filterArray({oldToken.class},paser.STREAM_TABLE.EXPRESSION[TYPE]) == false then
 			break;
-		elseif token.class == "WORD" then
-			node = paser.createNode("FIELD",token.lexeme,token.line,token.column,{value = token.value});
-		elseif token.value ~= nil then
-			node = paser.createNode(token.class,token.lexeme,token.line,token.column,{value = token.value});
+		elseif oldToken.class == "WORD" then
+			newToken = {class = "IDENTIFIER",lexeme = oldToken.lexeme,line = oldToken.line,column = oldToken.column,value = oldToken.value};
 		else
-			node = paser.createNode(token.class,token.lexeme,token.line,token.column);
+			newToken = oldToken;
 		end;
-		table.insert(expression,node);
+		table.insert(expression,newToken);
 		index = index + 1;
 	end;
 	if #expression == 0 then
-		paser.throwError("invalid token in the expression",token);
+		paser.throwError("invalid token in the expression",oldToken);
 	end;
 	paser.filterExpression(expression,TYPE);
 	expression = paser.formatExpression(expression);
@@ -224,34 +240,16 @@ paser.composeExpression = function(STREAM,INDEX,TYPE)
 end;
 
 
-paser.composeExpressions = function(STREAM,INDEX,TYPE)
-	local expression,expressions,index,token;
-	expressions = {};
-	index = INDEX;
-	while true do
-		token,index = paser.readToken(STREAM,index);
-		expression,index = paser.composeExpression(STREAM,index,TYPE);
-		table.insert(expressions,paser.createNode("EXPRESSION",token.lexeme,token.line,token.column,{value = expression}));
-		token,index = paser.readToken(STREAM,index);
-		if token.class ~= "COMMA" then
-			break;
-		end;
-		index = index + 1;
-	end;
-	return expressions,index;
-end;
-
-
-paser.composeIdentifiers = function(STREAM,INDEX)
-	local identifiers,index,name,token,type;
-	identifiers = {};
+paser.composeFields = function(STREAM,INDEX)
+	local fields,identifier,index,token,type;
+	fields = {};
 	index = INDEX;
 	while true do
 		token,index = paser.readToken(STREAM,index);
 		if token.class ~= "WORD" then
 			paser.throwError("invalid token in the declaration, expected a identifier name",token);
 		end;
-		name = token;
+		identifier = token;
 		token,index = paser.readToken(STREAM,index + 1);
 		if token.class == "COLON" then
 			token,index = paser.readToken(STREAM,index + 1);
@@ -263,41 +261,59 @@ paser.composeIdentifiers = function(STREAM,INDEX)
 		else
 			type = "Undefined";
 		end;
-		table.insert(identifiers,paser.createNode("IDENTIFIER",name.lexeme,name.line,name.column,{name = name.value,type = type}));
+		table.insert(fields,{class = "FIELD",identifier = identifier.value,type = type});
 		if token.class ~= "COMMA" then
 			break;
 		end;
 		index = index + 1;
 	end;
-	return identifiers,index;
+	return fields,index;
+end;
+
+
+paser.composeExpressions = function(STREAM,INDEX,TYPE)
+	local expression,expressions,index,token;
+	expressions = {};
+	index = INDEX;
+	while true do
+		token,index = paser.readToken(STREAM,index);
+		expression,index = paser.composeExpression(STREAM,index,TYPE);
+		table.insert(expressions,{class = "EXPRESSION",value = expression});
+		token,index = paser.readToken(STREAM,index);
+		if token.class ~= "COMMA" then
+			break;
+		end;
+		index = index + 1;
+	end;
+	return expressions,index;
 end;
 
 
 paser.readDeclaration = function(STREAM,INDEX)
-	local expressions,first,identifiers,index,modifier,operator,scope,token;
-	first,index = paser.readToken(STREAM,INDEX);
-	scope = first.class;
+	local fields,index,modifier,scope,token;
+	token,index = paser.readToken(STREAM,INDEX);
+	scope = token.class;
 	token,index = paser.readToken(STREAM,index + 1);
 	if helper.filterArray({token.class},paser.STREAM_TABLE.MODIFIER) == false then
 		paser.throwError("invalid token in the declaration, expected a modifier name",token);
 	end;
 	modifier = token.class;
-	identifiers,index = paser.composeIdentifiers(STREAM,index + 1);
+	fields,index = paser.composeFields(STREAM,index + 1);
 	token,index = paser.readToken(STREAM,index);
 	if helper.filterArray({token.class},paser.STREAM_TABLE.DECLARATION) == true then
+		local operator,values;
 		operator = token.class;
-		expressions,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
-		return paser.createNode("INITIALIZATION",first.lexeme,first.line,first.column,{scope = scope,modifier = modifier,identifiers = identifiers,operator = operator,expressions = expressions}),index;
+		values,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
+		return {class = "INITIALIZATION",scope = scope,modifier = modifier,fields = fields,operator = operator,values = values},index;
 	else
-		return paser.createNode("DECLARATION",first.lexeme,first.line,first.column,{scope = scope,modifier = modifier,identifiers = identifiers}),index;
+		return {class = "DECLARATION",scope = scope,modifier = modifier,fields = fields},index;
 	end;
 end;
 
 
 paser.readAssigment = function(STREAM,INDEX)
-	local expressions,fields,first,index,operator,token;
-	first,index = paser.readToken(STREAM,INDEX);
-	fields,index = paser.composeExpressions(STREAM,index,"REDUCED");
+	local fields,index,operator,token,values;
+	fields,index = paser.composeExpressions(STREAM,INDEX,"REDUCED");
 	token,index = paser.readToken(STREAM,index);
 	if #fields > 1 then
 		if token.class ~= "EQUAL" then
@@ -309,8 +325,8 @@ paser.readAssigment = function(STREAM,INDEX)
 		end;
 	end;
 	operator = token.class;
-	expressions,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
-	return paser.createNode("ASSIGNMENT",first.lexeme,first.line,first.column,{fields = fields,operator = operator,expressions = expressions}),index;
+	values,index = paser.composeExpressions(STREAM,index + 1,"EXTENDED");
+	return {class = "ASSIGNMENT",fields = fields,operator = operator,values = values},index;
 end;
 
 
@@ -320,7 +336,7 @@ paser.composeBlock = function(STREAM,INDEX)
 	index = INDEX;
 	while true do
 		token,index = paser.readToken(STREAM,index);
-		if helper.filterArray({token.class},paser.STREAM_TABLE.SCOPE.ROUTINE) == true then
+		if helper.filterArray({token.class},paser.STREAM_TABLE.SCOPE) == true then
 			statement,index = paser.readDeclaration(STREAM,index);
 		elseif helper.filterArray({token.class},paser.STREAM_TABLE.EXPRESSION["REDUCED"]) == true then
 			statement,index = paser.readAssigment(STREAM,index);
@@ -342,19 +358,17 @@ end;
 
 
 paser.createStream = function(STREAM)
-	local block,first,index,token;
-	first,index = paser.readToken(STREAM,1);
-	block,index = paser.composeBlock(STREAM,index);
+	local block,index,token;
+	block,index = paser.composeBlock(STREAM,1);
 	token,index = paser.readToken(STREAM,index);
 	if token.class ~= "END" then
 		paser.throwError("invalid token in the script, expected a EOF",token);
 	end;
-	return paser.createNode("SCRIPT",first.lexeme,first.line,first.column,{value = block});
+	return {class = "SCRIPT",value = block};
 end;
 
 
 paser.printStream = function(NODE,TABULATION)
-	local value;
 	io.write(string.rep("\t",TABULATION) .. "CLASS: " .. NODE.class);
 	if (NODE.class == "SCRIPT") or (NODE.class == "EXPRESSION") then
 		io.write("\n");
@@ -372,16 +386,16 @@ paser.printStream = function(NODE,TABULATION)
 		if NODE.class == "INITIALIZATION" then
 			io.write(" | OPERATOR: " .. NODE.operator);
 		end;
-		io.write("\n" .. string.rep("\t",TABULATION + 1) .. "IDENTIFIERS: " .. "\n");
-		for i = 1, #NODE.identifiers do
-			paser.printStream(NODE.identifiers[i],TABULATION + 2);
+		io.write("\n" .. string.rep("\t",TABULATION + 1) .. "FIELDS: " .. "\n");
+		for i = 1, #NODE.fields do
+			paser.printStream(NODE.fields[i],TABULATION + 2);
 			io.write("\n");
 		end;
 		if NODE.class == "INITIALIZATION" then
 			io.write(string.rep("\t",TABULATION + 1) .. "EXPRESSIONS: " .. "\n");
-			for i = 1, #NODE.expressions do
-				paser.printStream(NODE.expressions[i],TABULATION + 2);
-				if i < #NODE.expressions then
+			for i = 1, #NODE.values do
+				paser.printStream(NODE.values[i],TABULATION + 2);
+				if i < #NODE.values then
 					io.write("\n");
 				end;
 			end;
@@ -394,28 +408,32 @@ paser.printStream = function(NODE,TABULATION)
 			io.write("\n");
 		end;
 		io.write(string.rep("\t",TABULATION + 1) .. "EXPRESSIONS: " .. "\n");
-		for i = 1, #NODE.expressions do
-			paser.printStream(NODE.expressions[i],TABULATION + 2);
-			if i < #NODE.expressions then
+		for i = 1, #NODE.values do
+			paser.printStream(NODE.values[i],TABULATION + 2);
+			if i < #NODE.values then
 				io.write("\n");
 			end;
 		end;
-	elseif NODE.class == "IDENTIFIER" then
-		io.write(" | NAME: " .. NODE.name .. " | TYPE: " .. NODE.type);
-	else
-		if NODE.class == "BOOLEAN" then
+	elseif NODE.class == "FIELD" then
+		io.write(" | IDENTIFIER: " .. NODE.identifier .. " | TYPE: " .. NODE.type);
+	elseif NODE.class == "LITERAL" then
+		local value;
+		io.write(" | TYPE: " .. NODE.type);
+		if NODE.type == "Boolean" then
 			if NODE.value == false then
 				value = "false";
 			else
 				value = "true";
 			end;
-		elseif NODE.class == "STRING" then
-			value = "\"" .. NODE.value .. "\""
-		else
+		elseif NODE.type == "Number" then
 			value = NODE.value;
+		elseif NODE.type == "String" then
+			value = "\"" .. NODE.value .. "\""
 		end;
 		if value ~= nil then
 			io.write(" | VALUE: " .. value);
 		end;
+	elseif (NODE.class == "IDENTIFIER") or (NODE.class == "OPERATOR") then
+		io.write(" | VALUE: " .. NODE.value);
 	end;
 end;
