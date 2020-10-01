@@ -5,7 +5,7 @@ lexer.TABLE =
 {
 	KEYWORD =
 	{
-		"global","local",
+		"global","thread","local","public","protected","private",
 		"constant","variable",
 		"null",
 		"not","and","or","xor"
