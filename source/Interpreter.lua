@@ -43,7 +43,7 @@ interpreter.resolveOperand = function(OPERAND,SCOPES)
 	if OPERAND.class == "IDENTIFIER" then
 		local node;
 		interpreter.resolveScope(OPERAND,SCOPES);
-		node = OPERAND.scope[OPERAND.value];
+		node = OPERAND.scope[OPERAND.value].value;
 		return {class = "LITERAL",type = node.type,value = node.value};
 	else
 		return OPERAND;
@@ -100,32 +100,32 @@ interpreter.runExpression = function(EXPRESSION,SCOPES)
 					if (leftOperand.type ~= "Boolean") or (rightOperand.type ~= "Boolean") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value and rightOperand.value;
+					rightOperand.value = leftOperand.value and rightOperand.value;
 				elseif node.value == "OR" then
 					if (leftOperand.type ~= "Boolean") or (rightOperand.type ~= "Boolean") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value or rightOperand.value;
+					rightOperand.value = leftOperand.value or rightOperand.value;
 				elseif node.value == "XOR" then
 					if (leftOperand.type ~= "Boolean") or (rightOperand.type ~= "Boolean") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value ~= rightOperand.value;
+					rightOperand.value = leftOperand.value ~= rightOperand.value;
 				elseif node.value == "PLUS" then
 					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value + rightOperand.value;
+					rightOperand.value = leftOperand.value + rightOperand.value;
 				elseif node.value == "MINUS" then
 					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value - rightOperand.value;
+					rightOperand.value = leftOperand.value - rightOperand.value;
 				elseif node.value == "ASTERISK" then
 					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value * rightOperand.value;
+					rightOperand.value = leftOperand.value * rightOperand.value;
 				elseif node.value == "SLASH" then
 					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
 						helper.throwError("Runtime error");
@@ -133,7 +133,7 @@ interpreter.runExpression = function(EXPRESSION,SCOPES)
 					if rightOperand.value == 0 then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value / rightOperand.value;
+					rightOperand.value = leftOperand.value / rightOperand.value;
 				elseif node.value == "PERCENT" then
 					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
 						helper.throwError("Runtime error");
@@ -141,29 +141,48 @@ interpreter.runExpression = function(EXPRESSION,SCOPES)
 					if rightOperand.value == 0 then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.value = leftOperand.value % rightOperand.value;
+					rightOperand.value = leftOperand.value % rightOperand.value;
 				elseif node.value == "LESS" then
+					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
+						helper.throwError("Runtime error");
+					end;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value < rightOperand.value;
 				elseif node.value == "LESS-EQUAL" then
+					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
+						helper.throwError("Runtime error");
+					end;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value <= rightOperand.value;
 				elseif node.value == "DOUBLE-EQUAL" then
 					if leftOperand.type ~= rightOperand.type then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.type = "Boolean";
-					leftOperand.value = leftOperand.value == rightOperand.value;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value == rightOperand.value;
 				elseif node.value == "NOT-EQUAL" then
 					if leftOperand.type ~= rightOperand.type then
 						helper.throwError("Runtime error");
 					end;
-					leftOperand.type = "Boolean";
-					leftOperand.value = leftOperand.value ~= rightOperand.value;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value ~= rightOperand.value;
 				elseif node.value == "GREATER-EQUAL" then
+					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
+						helper.throwError("Runtime error");
+					end;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value >= rightOperand.value;
 				elseif node.value == "GREATER" then
+					if (leftOperand.type ~= "Number") or (rightOperand.type ~= "Number") then
+						helper.throwError("Runtime error");
+					end;
+					rightOperand.type = "Boolean";
+					rightOperand.value = leftOperand.value > rightOperand.value;
 				end;
 				stack[1] = rightOperand;
 			end;
 		end;
 	end;
-	helper.printTable(stack,0,true);
 	if #stack ~= 1 then
 		helper.throwError("Runtime error");
 	end;
@@ -202,7 +221,19 @@ end;
 
 interpreter.runBlock = function(BLOCK,SCOPES)
 	local scope,statement;
-	scope = {};
+	scope =
+	{
+		type = "Scope",
+		value =
+		{
+			global =
+			{
+				modifier = "CONSTANT",
+				type = "Scope",
+				value = SCOPES.globalScope
+			}
+		}
+	};
 	for i = 1, #BLOCK do
 		statement = BLOCK[i];
 		if (statement.class == "DECLARATION") or (statement.class == "INITIALIZATION") then
@@ -216,7 +247,14 @@ end;
 
 interpreter.runStream = function(STREAM)
 	local scopes;
-	scopes = {globalScope = {}};
+	scopes =
+	{
+		globalScope =
+		{
+			type = "Scope",
+			value = {}
+		}
+	};
 	interpreter.runBlock(STREAM.value,scopes);
 	helper.printTable(scopes,0,true);
 end;

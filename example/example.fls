@@ -1,5 +1,6 @@
 # Flamma Code Example
 
 global constant value1 := 32;
-global constant value2 := value2;
-global variable boolean := (4 + 4) * (2 + 2) == value;
+global variable teste = value1 >> 32;
+global constant value2 := value1;
+global variable boolean := (4 + 4) * (2 + 2) == value2;
